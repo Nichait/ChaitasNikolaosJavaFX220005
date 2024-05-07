@@ -202,9 +202,6 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     }
     
     private void nextBtn_Clicked() {
-        /*for (int i = 0; i < chosenWord.length(); i++) {
-            validationArr[i] = false;
-        } */
         correctClicks = 0;
         mistakes = 0;
         arrIdx = 0;
@@ -325,7 +322,6 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         Canvas gameCanvas = new Canvas(800,500);
         GraphicsContext gc = gameCanvas.getGraphicsContext2D();
         FileInputStream input =
-        //new FileInputStream("C:\\Users\\nikos\\Documents\\NetBeansProjects\\ChaitasNikolaosJavaFX220005\\src\\chaitasnikolaosjavafx220005\\image.jpeg");
         new FileInputStream("./src/chaitasnikolaosjavafx220005/image.jpeg");
         Image image = new Image(input);
         gc.drawImage(image, 0, 0,  gameCanvas.getWidth(), gameCanvas.getHeight());
