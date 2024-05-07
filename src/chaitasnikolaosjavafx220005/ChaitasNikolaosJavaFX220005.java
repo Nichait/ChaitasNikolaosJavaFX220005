@@ -444,8 +444,10 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
 /* - TODO:
     - Add timer //DONE
     - Implement hint button  //DONE
-    - Implement victory/loss screen
+    - Implement victory/loss screen //DONE
     - Implement human drawing if timer runs out //DONE
     - Implement menu //DONE
     - Implement next word button and functionality //DONE
+
+    PROJECT REQUIREMENTS COMPLETE
 */
