@@ -1,23 +1,17 @@
 package chaitasnikolaosjavafx220005;
 
 import java.io.*;
-//import java.util.ArrayList;
-//import java.util.Random;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.event.*;
 import javafx.geometry.*;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.canvas.*;
 import javafx.scene.image.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
-//import java.util.Scanner;
-import javafx.scene.Node;
+import javafx.scene.*;
 import javafx.scene.text.*;
 import javafx.scene.input.*;
 import javafx.scene.control.*;
@@ -140,7 +134,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
                 check = false;
             }
         }
-        System.out.println("Correct clicks: " + correctClicks + " " + "Length - 2: " + (chosenWord.length()-2));
+        //System.out.println("Correct clicks: " + correctClicks + " " + "Length - 2: " + (chosenWord.length()-2));
         if (check && correctClicks == chosenWord.length()-2) {
             MessageBox.show("You won!", "Success!");
             timeline.stop();
