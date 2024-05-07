@@ -231,8 +231,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
                 (chosenWord.charAt(chosenWord.length()-1) == letter.charAt(0) && !buttonCheck && !continuityCheck)) {
                 drawBody(gc,keysPane);
         }
-        //if (chosenWord.charAt(chosenWord.length()-1) == letter.charAt(0) && !buttonCheck)
-               // drawBody(gc);
+        
         ArrayList<Integer> positions = new ArrayList<>();
         for (int i = 1; i < chosenWord.length()-1; i++) {
             if (chosenWord.charAt(i) == letter.charAt(0))
