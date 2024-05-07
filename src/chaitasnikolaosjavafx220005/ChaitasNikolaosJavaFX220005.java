@@ -1,8 +1,8 @@
 package chaitasnikolaosjavafx220005;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Random;
+//import java.util.ArrayList;
+//import java.util.Random;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -16,19 +16,61 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.*;
 import javafx.scene.paint.*;
 import javafx.scene.shape.*;
-import java.util.Scanner;
+//import java.util.Scanner;
 import javafx.scene.Node;
 import javafx.scene.text.*;
 import javafx.scene.input.*;
 import javafx.scene.control.*;
+import javafx.animation.*;
+import javafx.util.*;
+import java.util.*;
 
 public class ChaitasNikolaosJavaFX220005 extends Application {
+    
+    Stage stage;
     
     private int mistakes = 0;
     private ArrayList<String> words = new ArrayList<>();
     private String chosenWord;
+    private int secondsRemaining = 60;
+    private Timeline timeline;
+    private char[] wordArr;
+    private int reps = 1;
+    private int arrIdx = 0;
+    private boolean[] checkArr;
+    private int correctClicks = 0;
+    private boolean continuityCheck;
     
-    Stage stage;
+    
+    private boolean startOrEndExistsInBetween(String word) {
+        char[] chWord = word.toCharArray();
+        for (int i=1; i < word.length()-1; i++) {
+            if (chWord[i] == chWord[0] || chWord[i] == chWord[word.length()-1]) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private int countSameLetter(String word, char letter) {
+        int count = 0;
+        char[] chWord = word.toCharArray();
+        for (int i = 1; i < word.length()-1; i++) {
+            if (chWord[i] == letter) {
+                ++count;
+            }
+        }
+        return count;
+    }
+    
+    private static boolean Contains(char ch, char[] arr) {
+            boolean containsChar = false;
+            for (int j = 0; j < arr.length; j++) {
+                if (ch == arr[j]) containsChar = true;
+            }
+            if (!containsChar) return false; // arr2 does not contain arr1[i]
+        return true;
+    }
     
     private void btnClose_Clicked() {
         boolean reallyQuit = false;
@@ -38,29 +80,11 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         }
     }
     
-    private char[] loadLetters() {  //loads the alphabet in an array list 
-        /*char[] keyboard = new char[26];
-        for (char letter = 'A'; letter <= 'Z'; letter++) {
-            keyboard[letter-'A'] = letter;
-        }
-        return keyboard;*/
+    private char[] loadLetters() {  
         return "ABCDFEGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     }
-    
-  /* private void loadWordsFromFile(String filename) {
-        try {
-            Scanner scanner = new Scanner(new File(filename));
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine().trim();
-                if (!line.isEmpty()) 
-                    words.add(line);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    } */
    
-   private void loadWordsFromFile(File filename) {
+    private void loadWordsFromFile(File filename) {
         try {
             Scanner scanner = new Scanner(filename);
             while (scanner.hasNextLine()) {
@@ -72,10 +96,58 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             e.printStackTrace();
         }
     }
+   
+    private Label initializeTimer(GraphicsContext gc) {
+        Label timerLabel = new Label();
+        timerLabel.setFont(Font.font(20));
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), 
+                e -> {
+                    secondsRemaining--;
+                    
+                    timerLabel.setText("Time: " + secondsRemaining);
+                    
+                    if (secondsRemaining <= 0) {
+                        for (int i=mistakes;i<=6;++i) {
+                            drawBody(gc,null);
+                            timeline.stop();
+                            secondsRemaining = 60;
+                        }
+                    }
+                }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+        return timerLabel;
+    }
     
     private void chooseWord() {
         Random rand = new Random();
         chosenWord = words.get(rand.nextInt(words.size()));
+        wordArr = new char[chosenWord.length()];
+        wordArr[0] = chosenWord.charAt(0);
+        wordArr[chosenWord.length()-1] = chosenWord.charAt(chosenWord.length()-1);
+        checkArr = new boolean[chosenWord.length()];
+        checkArr[0] = true; checkArr[chosenWord.length()-1] = true;
+        continuityCheck = startOrEndExistsInBetween(chosenWord);
+    }
+    
+    private void checkForVictory(TilePane keysPane) {
+        boolean check = false;
+        for (int i = 0; i < chosenWord.length(); i++) {
+            if (checkArr[i]) {
+                check = true;
+            }
+            else {
+                check = false;
+            }
+        }
+        System.out.println("Correct clicks: " + correctClicks + " " + "Length - 2: " + (chosenWord.length()-2));
+        if (check && correctClicks == chosenWord.length()-2) {
+            MessageBox.show("You won!", "Success!");
+            timeline.stop();
+            for (Node node : keysPane.getChildren()) {
+            keysPane.setDisable(true);
+            }
+        }
     }
     
     private void drawLines(GraphicsContext gc) {
@@ -102,54 +174,71 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             String letter = button.getText();
             button.setOnMouseClicked(e-> {
             if (button.isDisabled()) {
-                drawBody(gc);
+                drawBody(gc,null);
             }
             else {    
             if (chosenWord.contains(letter)) {
-                updateCanvasWithLetter(gc, letter, false);
+                updateCanvasWithLetter(gc, letter, false,continuityCheck,keysPane);
+                wordArr[arrIdx] = letter.charAt(0);
+                ++correctClicks;
+                int countLetter = countSameLetter(chosenWord,letter.charAt(0));
+                if (countLetter>1) {
+                    correctClicks = correctClicks + (countLetter - 1);
+                }
+                checkArr[arrIdx] = true;
+                ++arrIdx;
             } else {
-                drawBody(gc); 
+                drawBody(gc,keysPane);
             }
             }
             button.setDisable(true); //so that the user can't press it again
+            checkForVictory(keysPane);
             });
         }
         }
     }
     
-    private void hintBtn_Clicked(GraphicsContext gc) {
+    private void hintBtn_Clicked(GraphicsContext gc, TilePane keysPane) {
         Random rand = new Random();
         int random_number = rand.nextInt(chosenWord.length()-2) + 2;
         char[] word = chosenWord.toCharArray();
         char randomLetter = word[random_number];
         boolean buttonCheck = true;                         //Checks if input came from hint button so it doesn't draw a body part
-        updateCanvasWithLetter(gc,String.valueOf(randomLetter),buttonCheck);
+        updateCanvasWithLetter(gc,String.valueOf(randomLetter),buttonCheck, continuityCheck, keysPane);
     }
     
     private void nextBtn_Clicked() {
+        /*for (int i = 0; i < chosenWord.length(); i++) {
+            validationArr[i] = false;
+        } */
+        correctClicks = 0;
+        mistakes = 0;
+        arrIdx = 0;
+        timeline.stop();
+        secondsRemaining = 60;
         startGame();
     }
     
     private void showFirstAndLastLetter(GraphicsContext gc, String letter) {
         int wordLength = chosenWord.length();
-    double spacing = 600.0 / (wordLength + 1); // Canvas width: 800px
+        double spacing = 600.0 / (wordLength + 1); // Canvas width: 800px
 
-    // Draw the first letter
-    gc.setFill(Color.BLACK);
-    gc.setFont(Font.font("Arial", FontWeight.BOLD, 20)); 
-    gc.fillText(chosenWord.substring(0, 1), 65 + spacing, 90); 
+        // Draw the first letter
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 20)); 
+        gc.fillText(chosenWord.substring(0, 1), 65 + spacing, 90); 
 
-    // Draw the last letter
-    gc.fillText(chosenWord.substring(wordLength - 1), 65 + wordLength * spacing, 90); 
+        // Draw the last letter
+        gc.fillText(chosenWord.substring(wordLength - 1), 65 + wordLength * spacing, 90); 
     }
     
-    private void updateCanvasWithLetter(GraphicsContext gc, String letter, boolean buttonCheck) {
-        if (chosenWord.charAt(0) == letter.charAt(0) && !buttonCheck) {
-                drawBody(gc);
-                ;
+    private void updateCanvasWithLetter(GraphicsContext gc, String letter, boolean buttonCheck, boolean continuityCheck, TilePane keysPane) {
+        if ((chosenWord.charAt(0) == letter.charAt(0) && !buttonCheck && !continuityCheck) || 
+                (chosenWord.charAt(chosenWord.length()-1) == letter.charAt(0) && !buttonCheck && !continuityCheck)) {
+                drawBody(gc,keysPane);
         }
-        if (chosenWord.charAt(chosenWord.length()-1) == letter.charAt(0) && !buttonCheck)
-                drawBody(gc);
+        //if (chosenWord.charAt(chosenWord.length()-1) == letter.charAt(0) && !buttonCheck)
+               // drawBody(gc);
         ArrayList<Integer> positions = new ArrayList<>();
         for (int i = 1; i < chosenWord.length()-1; i++) {
             if (chosenWord.charAt(i) == letter.charAt(0))
@@ -204,7 +293,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     gc.strokeLine(300, 380, 360, 470); 
     }
     
-    private void drawBody(GraphicsContext gc) {
+    private void drawBody(GraphicsContext gc, TilePane keysPane) {
         ++mistakes;
         switch (mistakes) {
             case 1:
@@ -221,10 +310,16 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
                 break;
             case 5:
                 drawLeftLeg(gc);
+                break;
             case 6:
+                timeline.stop();
+                for (Node node : keysPane.getChildren()) {
+                    keysPane.setDisable(true);
+                }
                 drawRightLeg(gc);
+                MessageBox.show("You lost!", "Loss");
+                break;
             default:
-                System.out.println("Bruh");
         }
     }   
     
@@ -242,20 +337,6 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         Image image = new Image(input);
         gc.drawImage(image, 0, 0,  gameCanvas.getWidth(), gameCanvas.getHeight());
          
-         
-         //Close and Hint buttons (hint functionality to be added later)
-        Button closeBtn = new Button("Quit");
-        closeBtn.setOnAction(e->btnClose_Clicked());
-        Button hintBtn = new Button("Hint");
-        hintBtn.setOnAction(e -> hintBtn_Clicked(gc));
-        Button nextWordBtn = new Button("Next Word");
-        nextWordBtn.setOnAction(e -> nextBtn_Clicked());
-        
-        HBox btnPane = new HBox();
-        btnPane.getChildren().addAll(nextWordBtn,hintBtn,closeBtn);
-        btnPane.setAlignment(Pos.BOTTOM_RIGHT);
-        btnPane.setPadding(new Insets(10,10,10,10));
-        btnPane.setSpacing(10);
         
         //Letters panel
         char[] keys = loadLetters();
@@ -274,19 +355,37 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             button.setPrefSize(40,40);
         }
         
+         //Close and Hint buttons (hint functionality to be added later)
+        Button closeBtn = new Button("Quit");
+        closeBtn.setOnAction(e->btnClose_Clicked());
+        Button hintBtn = new Button("Hint");
+        hintBtn.setOnAction(e -> hintBtn_Clicked(gc,keysPane));
+        Button nextWordBtn = new Button("Next Word");
+        nextWordBtn.setOnAction(e -> nextBtn_Clicked());
+        
+        final Label timerLabel = initializeTimer(gc);
+        timerLabel.setPadding(new Insets (10));
+        
+        HBox btnPane = new HBox();
+        btnPane.getChildren().addAll(nextWordBtn,hintBtn,closeBtn);
+        btnPane.setAlignment(Pos.BOTTOM_RIGHT);
+        btnPane.setPadding(new Insets(10,10,10,10));
+        btnPane.setSpacing(10);
+        
+        
         chooseWord();
         drawLines(gc);
         showFirstAndLastLetter(gc,chosenWord);
         
         StackPane root = new StackPane();
         StackPane mainPane = new StackPane();        
-        mainPane.getChildren().addAll(gameCanvas,btnPane,keysPane);
+        mainPane.getChildren().addAll(gameCanvas,btnPane,keysPane, timerLabel);
         mainPane.setAlignment(gameCanvas,Pos.TOP_CENTER);
         mainPane.setAlignment(btnPane,Pos.BOTTOM_RIGHT);
         mainPane.setAlignment(keysPane,Pos.BOTTOM_LEFT);
+        mainPane.setAlignment(timerLabel,Pos.TOP_LEFT);
         root.getChildren().addAll(mainPane);        
         
-        //Scene scene = new Scene(root, 800, 600);
         Scene scene = new Scene(root,800,600);
         
         stage.setTitle("Hangman Game");
@@ -312,7 +411,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         Button playButton = new Button("Play game");
         playButton.setOnAction(e -> startGame());
         Button quitButton = new Button("Quit");
-        quitButton.setOnAction(e->btnClose_Clicked());
+        quitButton.setOnAction(e -> btnClose_Clicked());
         
         welcomeLabel.setAlignment(Pos.CENTER);
         
@@ -329,69 +428,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         stage.setTitle("Hangman Game");
         stage.setScene(scene);
         stage.setResizable(false);
-        stage.show();
-        
-        /*File words = new File("./src/chaitasnikolaosjavafx220005/words.txt");
-         
-        loadWordsFromFile(words);
-          //Game Screen
-        Canvas gameCanvas = new Canvas(800,500);
-        GraphicsContext gc = gameCanvas.getGraphicsContext2D();
-        FileInputStream input =
-        //new FileInputStream("C:\\Users\\nikos\\Documents\\NetBeansProjects\\ChaitasNikolaosJavaFX220005\\src\\chaitasnikolaosjavafx220005\\image.jpeg");
-        new FileInputStream("./src/chaitasnikolaosjavafx220005/image.jpeg");
-        Image image = new Image(input);
-        gc.drawImage(image, 0, 0,  gameCanvas.getWidth(), gameCanvas.getHeight());
-         
-         
-         //Close and Hint buttons (hint functionality to be added later)
-        Button closeBtn = new Button("Quit");
-        closeBtn.setOnAction(e->btnClose_Clicked());
-        Button hintBtn = new Button("Hint");
-        //add functionality for hintBtn
-        
-        HBox btnPane = new HBox();
-        btnPane.getChildren().addAll(hintBtn,closeBtn);
-        btnPane.setAlignment(Pos.BOTTOM_RIGHT);
-        btnPane.setPadding(new Insets(10,10,10,10));
-        btnPane.setSpacing(10);
-        
-        //Letters panel
-        char[] keys = loadLetters();
-        TilePane keysPane = new TilePane();
-        keysPane.setMaxWidth(600);
-        keysPane.setMaxHeight(100);
-        keysPane.setPadding(new Insets(10));
-        keysPane.setHgap(5);
-        keysPane.setVgap(5);
-        
-        for (int i = 0; i<keys.length;i++) {
-            Button button = new Button(String.valueOf(keys[i]));
-            keysPane.getChildren().add(button);
-            //add functionality for the buttons
-            button.setOnAction(e->btn_Clicked(keysPane,gc));
-            button.setPrefSize(40,40);
-        }
-        
-        chooseWord();
-        drawLines(gc);
-        showFirstAndLastLetter(gc,chosenWord);
-        
-        StackPane root = new StackPane();
-        StackPane mainPane = new StackPane();        
-        mainPane.getChildren().addAll(gameCanvas,btnPane,keysPane);
-        mainPane.setAlignment(gameCanvas,Pos.TOP_CENTER);
-        mainPane.setAlignment(btnPane,Pos.BOTTOM_RIGHT);
-        mainPane.setAlignment(keysPane,Pos.BOTTOM_LEFT);
-        root.getChildren().addAll(mainPane);        
-        
-        //Scene scene = new Scene(root, 800, 600);
-        scene = new Scene(root,800,600);
-        
-        stage.setTitle("Hangman Game");
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.show(); */
+        stage.show();    
     }
 
     /**
@@ -407,16 +444,14 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
 
 /* BUGS 
 
-   - First button press doesn't register as a button (still needs fixing), may be something to do with the event handler
-
 */
 
 
 /* - TODO:
-    - Add timer
+    - Add timer //DONE
     - Implement hint button  //DONE
     - Implement victory/loss screen
-    - Implement human drawing if timer runs out
+    - Implement human drawing if timer runs out //DONE
     - Implement menu //DONE
     - Implement next word button and functionality //DONE
 */
