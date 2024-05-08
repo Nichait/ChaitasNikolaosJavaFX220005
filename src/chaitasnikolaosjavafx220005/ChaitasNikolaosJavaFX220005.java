@@ -136,8 +136,8 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         }
         //System.out.println("Correct clicks: " + correctClicks + " " + "Length - 2: " + (chosenWord.length()-2));
         if (check && correctClicks == chosenWord.length()-2) {
-            MessageBox.show("You won!", "Success!");
             timeline.stop();
+            MessageBox.show("You won!", "Success!");
             for (Node node : keysPane.getChildren()) {
             keysPane.setDisable(true);
             }
@@ -194,7 +194,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     
     private void hintBtn_Clicked(GraphicsContext gc, TilePane keysPane) {
         Random rand = new Random();
-        int random_number = rand.nextInt(chosenWord.length()-2) + 2;
+        int random_number = rand.nextInt(chosenWord.length()-2) + 1;
         char[] word = chosenWord.toCharArray();
         char randomLetter = word[random_number];
         boolean buttonCheck = true;                         //Checks if input came from hint button so it doesn't draw a body part
