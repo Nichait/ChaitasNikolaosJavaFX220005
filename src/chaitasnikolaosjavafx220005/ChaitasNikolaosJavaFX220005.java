@@ -29,11 +29,11 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     private int secondsRemaining = 60;
     private Timeline timeline;
     private char[] wordArr;
-    private int reps = 1;
     private int arrIdx = 0;
     private boolean[] checkArr;
     private int correctClicks = 0;
     private boolean continuityCheck;
+    
     
     
     private boolean startOrEndExistsInBetween(String word) {
@@ -59,10 +59,10 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     
     private static boolean Contains(char ch, char[] arr) {
             boolean containsChar = false;
-            for (int j = 0; j < arr.length; j++) {
+            for (int j = 1; j < arr.length-1; j++) {
                 if (ch == arr[j]) containsChar = true;
             }
-            if (!containsChar) return false; // arr2 does not contain arr1[i]
+            if (!containsChar) return false;
         return true;
     }
     
@@ -134,7 +134,6 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
                 check = false;
             }
         }
-        //System.out.println("Correct clicks: " + correctClicks + " " + "Length - 2: " + (chosenWord.length()-2));
         if (check && correctClicks == chosenWord.length()-2) {
             timeline.stop();
             MessageBox.show("You won!", "Success!");
@@ -192,13 +191,17 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         }
     }
     
-    private void hintBtn_Clicked(GraphicsContext gc, TilePane keysPane) {
+    private void hintBtn_Clicked(GraphicsContext gc, TilePane keysPane, Button button) {
         Random rand = new Random();
         int random_number = rand.nextInt(chosenWord.length()-2) + 1;
         char[] word = chosenWord.toCharArray();
         char randomLetter = word[random_number];
+        checkArr[random_number] = true;
         boolean buttonCheck = true;                         //Checks if input came from hint button so it doesn't draw a body part
-        updateCanvasWithLetter(gc,String.valueOf(randomLetter),buttonCheck, continuityCheck, keysPane);
+        if (!Contains(randomLetter,wordArr) && checkArr[random_number]) {
+            updateCanvasWithLetter(gc,String.valueOf(randomLetter),buttonCheck, continuityCheck, keysPane);
+        }
+     button.setDisable(true);   
     }
     
     private void nextBtn_Clicked() {
@@ -207,6 +210,8 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         arrIdx = 0;
         timeline.stop();
         secondsRemaining = 60;
+        for (int i=1;i<chosenWord.length()-1;i++)
+            checkArr[i] = false;
         startGame();
     }
     
@@ -344,11 +349,11 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             button.setPrefSize(40,40);
         }
         
-         //Close and Hint buttons (hint functionality to be added later)
+         //Close and Hint buttons
         Button closeBtn = new Button("Quit");
         closeBtn.setOnAction(e->btnClose_Clicked());
         Button hintBtn = new Button("Hint");
-        hintBtn.setOnAction(e -> hintBtn_Clicked(gc,keysPane));
+        hintBtn.setOnAction(e -> hintBtn_Clicked(gc,keysPane,hintBtn));
         Button nextWordBtn = new Button("Next Word");
         nextWordBtn.setOnAction(e -> nextBtn_Clicked());
         
@@ -436,13 +441,5 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
 */
 
 
-/* - TODO:
-    - Add timer //DONE
-    - Implement hint button  //DONE
-    - Implement victory/loss screen //DONE
-    - Implement human drawing if timer runs out //DONE
-    - Implement menu //DONE
-    - Implement next word button and functionality //DONE
-
-    PROJECT REQUIREMENTS COMPLETE
+/* PROJECT COMPLETE
 */
