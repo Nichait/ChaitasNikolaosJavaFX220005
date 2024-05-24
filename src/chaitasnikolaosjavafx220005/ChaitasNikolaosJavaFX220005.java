@@ -35,7 +35,8 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     private boolean continuityCheck;
     
     
-    
+    //Checks if any of the letters of the first and last index exist in between the word
+    //so it doesn't skip them during the search process
     private boolean startOrEndExistsInBetween(String word) {
         char[] chWord = word.toCharArray();
         for (int i=1; i < word.length()-1; i++) {
@@ -46,6 +47,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         return false;
     }
     
+    //Counts if there more than 1 of the same letter, so they all get drawn correctly
     private int countSameLetter(String word, char letter) {
         int count = 0;
         char[] chWord = word.toCharArray();
@@ -57,6 +59,8 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         return count;
     }
     
+    //Checks if the 1st argument of the method exists in the character array of the 2nd argument
+    //Used in the hint event handler
     private static boolean Contains(char ch, char[] arr) {
             boolean containsChar = false;
             for (int j = 1; j < arr.length-1; j++) {
@@ -65,7 +69,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             if (!containsChar) return false;
         return true;
     }
-    
+    //Quit app button
     private void btnClose_Clicked() {
         boolean reallyQuit = false;
         reallyQuit = ConfirmationBox.show("Are you sure you want to quit?","Confirmation","Yes","No");
@@ -73,11 +77,11 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             stage.close();
         }
     }
-    
+    //Loads the letters to be initialized in our buttons contained in the Tile Pane
     private char[] loadLetters() {  
         return "ABCDFEGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     }
-   
+    //Loads the words from the text file
     private void loadWordsFromFile(File filename) {
         try {
             Scanner scanner = new Scanner(filename);
@@ -90,7 +94,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             e.printStackTrace();
         }
     }
-   
+    //Initializes the clock for each word. If it runs out of time, it stops the timeline.
     private Label initializeTimer(GraphicsContext gc) {
         Label timerLabel = new Label();
         timerLabel.setFont(Font.font(20));
@@ -112,7 +116,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         timeline.play();
         return timerLabel;
     }
-    
+    //Chooses a word randomly from the ArrayList initialized in loadWordsFromFile()
     private void chooseWord() {
         Random rand = new Random();
         chosenWord = words.get(rand.nextInt(words.size()));
@@ -124,6 +128,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         continuityCheck = startOrEndExistsInBetween(chosenWord);
     }
     
+    //Checks if the whole word has been filled out in time (conditions are evaluated every time a button is pressed)
     private void checkForVictory(TilePane keysPane) {
         boolean check = false;
         for (int i = 0; i < chosenWord.length(); i++) {
@@ -143,6 +148,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         }
     }
     
+    //Draws the appropriate amount of lines for each word
     private void drawLines(GraphicsContext gc) {
         int wordLength = chosenWord.length();
         
@@ -160,6 +166,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         }
     }
     
+    //Alphabet button event handler
     private void btn_Clicked(TilePane keysPane, GraphicsContext gc) {
         for (Node node : keysPane.getChildren()) {
             if (node instanceof Button) {
@@ -190,20 +197,25 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         }
         }
     }
-    
+    //Hint buttton event handler 
     private void hintBtn_Clicked(GraphicsContext gc, TilePane keysPane, Button button) {
         Random rand = new Random();
         int random_number = rand.nextInt(chosenWord.length()-2) + 1;
         char[] word = chosenWord.toCharArray();
         char randomLetter = word[random_number];
         checkArr[random_number] = true;
-        boolean buttonCheck = true;                         //Checks if input came from hint button so it doesn't draw a body part
+        boolean buttonCheck = true;  //Checks if input came from hint button so it doesn't draw a body part
         if (!Contains(randomLetter,wordArr) && checkArr[random_number]) {
             updateCanvasWithLetter(gc,String.valueOf(randomLetter),buttonCheck, continuityCheck, keysPane);
+            int countLetter = countSameLetter(chosenWord,randomLetter);
+                if (countLetter>1) {
+                correctClicks = correctClicks + (countLetter - 1);
+                }
+            ++correctClicks;
         }
      button.setDisable(true);   
     }
-    
+    //Chooses the next word to be displayed (basically restarts the game after reseting every value that needs to be reseted)
     private void nextBtn_Clicked() {
         correctClicks = 0;
         mistakes = 0;
@@ -214,7 +226,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             checkArr[i] = false;
         startGame();
     }
-    
+    //Prints first and last letter of our chosen word
     private void showFirstAndLastLetter(GraphicsContext gc, String letter) {
         int wordLength = chosenWord.length();
         double spacing = 600.0 / (wordLength + 1); // Canvas width: 800px
@@ -227,7 +239,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         // Draw the last letter
         gc.fillText(chosenWord.substring(wordLength - 1), 65 + wordLength * spacing, 90); 
     }
-    
+    //Draws the letters of our word
     private void updateCanvasWithLetter(GraphicsContext gc, String letter, boolean buttonCheck, boolean continuityCheck, TilePane keysPane) {
         if ((chosenWord.charAt(0) == letter.charAt(0) && !buttonCheck && !continuityCheck) || 
                 (chosenWord.charAt(chosenWord.length()-1) == letter.charAt(0) && !buttonCheck && !continuityCheck)) {
@@ -251,43 +263,44 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             gc.fillText(letter,x,y);
         }
     }
-    
+    //Draws the head of the stickman
     private void drawHead(GraphicsContext gc) {
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(2);
         gc.strokeOval(260,150,80,80);
     }
-    
+    //Draws the torso of the stickman
     private void drawTorso(GraphicsContext gc) {
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(2);
         gc.strokeLine(300,230,300,380);
     }
-    
+    //Draws the left arm of the stickman
     private void drawLeftArm(GraphicsContext gc) {
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(2);
         gc.strokeLine(300,260,240,310);
     }
-    
+    //Draws the right arm of the stickman
     private void drawRightArm(GraphicsContext gc) {
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(2);
         gc.strokeLine(300,260,360,310);
     }
-    
+    //Draws the left leg of the stickman
     private void drawLeftLeg(GraphicsContext gc) {
     gc.setStroke(Color.BLACK);
     gc.setLineWidth(2);
     gc.strokeLine(300, 380, 240, 470);
     }
-
+    //Draws the right leg of the stickman
     private void drawRightLeg(GraphicsContext gc) {
     gc.setStroke(Color.BLACK);
     gc.setLineWidth(2);
     gc.strokeLine(300, 380, 360, 470); 
     }
     
+    //Selects the correct body part to be drawn based on the mistakes variable initialized as a class member
     private void drawBody(GraphicsContext gc, TilePane keysPane) {
         ++mistakes;
         switch (mistakes) {
@@ -317,13 +330,13 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             default:
         }
     }   
-    
+    //Starts the game, initializes background, word files and the whole scenery (buttons, panes, etc.)
     private void playGame() throws FileNotFoundException {
         
         File words = new File("./src/chaitasnikolaosjavafx220005/words.txt");
          
         loadWordsFromFile(words);
-          //Game Screen
+        //Game Screen
         Canvas gameCanvas = new Canvas(800,500);
         GraphicsContext gc = gameCanvas.getGraphicsContext2D();
         FileInputStream input =
@@ -349,7 +362,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
             button.setPrefSize(40,40);
         }
         
-         //Close and Hint buttons
+        //Close and Hint buttons
         Button closeBtn = new Button("Quit");
         closeBtn.setOnAction(e->btnClose_Clicked());
         Button hintBtn = new Button("Hint");
@@ -387,7 +400,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         stage.setResizable(false);
         stage.show();
     }
-    
+    //If the word text file is not found, game does not start and exception is thrown
     private void startGame() {
         try {
             playGame();
@@ -398,6 +411,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         }
     }
     
+    //Initializes menu screen. Allows user to either choose to play the game or quit
     @Override
     public void start(Stage primaryStage) {
         
@@ -433,13 +447,3 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     }
     
 }
-
-
-
-/* BUGS 
-
-*/
-
-
-/* PROJECT COMPLETE
-*/

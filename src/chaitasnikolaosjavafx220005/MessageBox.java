@@ -27,6 +27,7 @@ public class MessageBox {
     VBox pane = new VBox(20);
     pane.getChildren().addAll(lbl,btnOK);
     pane.setAlignment(Pos.CENTER);
+    pane.setPadding(new Insets(10));
     
     Scene scene = new Scene(pane);
     stage.setScene(scene);

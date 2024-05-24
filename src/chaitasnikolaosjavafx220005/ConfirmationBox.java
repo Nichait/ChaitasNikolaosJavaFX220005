@@ -6,7 +6,7 @@ import javafx.scene.*;
 import javafx.scene.layout.*;
 import javafx.scene.control.*;
 import javafx.event.*;
-import javafx.geometry.Pos;
+import javafx.geometry.*;
 
 public class ConfirmationBox {
     
@@ -42,6 +42,7 @@ public class ConfirmationBox {
         
         HBox paneBtn = new HBox(20);
         paneBtn.getChildren().addAll(btnYes, btnNo);
+        paneBtn.setPadding(new Insets(10));
         
         VBox pane = new VBox(20);
         pane.getChildren().addAll(lbl,paneBtn);
