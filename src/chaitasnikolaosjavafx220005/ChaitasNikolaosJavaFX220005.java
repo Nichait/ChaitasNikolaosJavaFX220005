@@ -64,7 +64,6 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     private static boolean Contains(char ch, char[] arr) {
             boolean containsChar = false;
             for (int j = 0; j < arr.length; j++) {
-                System.out.println("At index " + j);
                 if (ch == arr[j]) containsChar = true;
             }
             if (!containsChar) return false;
