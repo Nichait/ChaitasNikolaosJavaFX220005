@@ -63,7 +63,8 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
     //Used in the hint event handler
     private static boolean Contains(char ch, char[] arr) {
             boolean containsChar = false;
-            for (int j = 1; j < arr.length-1; j++) {
+            for (int j = 0; j < arr.length; j++) {
+                System.out.println("At index " + j);
                 if (ch == arr[j]) containsChar = true;
             }
             if (!containsChar) return false;
@@ -95,7 +96,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         }
     }
     //Initializes the clock for each word. If it runs out of time, it stops the timeline.
-    private Label initializeTimer(GraphicsContext gc) {
+    private Label initializeTimer(GraphicsContext gc, TilePane keysPane) {
         Label timerLabel = new Label();
         timerLabel.setFont(Font.font(20));
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), 
@@ -106,7 +107,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
                     
                     if (secondsRemaining <= 0) {
                         for (int i=mistakes;i<=6;++i) {
-                            drawBody(gc,null);
+                            drawBody(gc,keysPane);
                             timeline.stop();
                             secondsRemaining = 60;
                         }
@@ -212,9 +213,14 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
                 correctClicks = correctClicks + (countLetter - 1);
                 }
             ++correctClicks;
-        }
-     button.setDisable(true);   
+            checkForVictory(keysPane);
     }
+        else {
+            hintBtn_Clicked(gc,keysPane,button);
+        }
+     button.setDisable(true);
+    }
+    
     //Chooses the next word to be displayed (basically restarts the game after reseting every value that needs to be reseted)
     private void nextBtn_Clicked() {
         correctClicks = 0;
@@ -370,7 +376,7 @@ public class ChaitasNikolaosJavaFX220005 extends Application {
         Button nextWordBtn = new Button("Next Word");
         nextWordBtn.setOnAction(e -> nextBtn_Clicked());
         
-        final Label timerLabel = initializeTimer(gc);
+        final Label timerLabel = initializeTimer(gc,keysPane);
         timerLabel.setPadding(new Insets (10));
         
         HBox btnPane = new HBox();
